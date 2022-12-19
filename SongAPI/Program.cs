@@ -1,5 +1,8 @@
 using Data;
 using Microsoft.EntityFrameworkCore;
+using Repository.Interfaces;
+using Service.CSV;
+using SongAPI.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,10 +13,14 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<SongContext>(
-    o => o.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<SongContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<ICSVService, CSVService>();
+builder.Services.AddTransient<CSVService>();
+builder.Services.AddTransient<ServiceCaller>();
 
 var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -28,4 +35,9 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+var service=app.Services.GetRequiredService<ServiceCaller>();
+service.ReadData();
+
 app.Run();
+
+

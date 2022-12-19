@@ -29,7 +29,7 @@ namespace Data.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Genre = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Year = table.Column<int>(type: "int", nullable: false),
+                    Year = table.Column<int>(type: "int", nullable: true),
                     ArtistId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>

@@ -3,9 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32516.85
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SongAPI", "SongAPI\SongAPI.csproj", "{195ACE9F-B128-487D-AECB-B0DCC725D97F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SongAPI", "SongAPI\SongAPI.csproj", "{195ACE9F-B128-487D-AECB-B0DCC725D97F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Data", "Data\Data.csproj", "{91DAA86D-0EDD-4390-B9BA-B8FE4B0C4802}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Data", "Data\Data.csproj", "{91DAA86D-0EDD-4390-B9BA-B8FE4B0C4802}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ViewModels", "Data.ViewModel\ViewModels.csproj", "{84F286C5-7A62-467E-B637-C66C8CA49AF4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mapping", "Mapper\Mapping.csproj", "{25C329AD-B0FF-4562-8A6C-80B5C2A46422}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service", "Repository\Service.csproj", "{FF4556AE-1DB1-4339-9C14-BA38BA4C9431}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +27,18 @@ Global
 		{91DAA86D-0EDD-4390-B9BA-B8FE4B0C4802}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{91DAA86D-0EDD-4390-B9BA-B8FE4B0C4802}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{91DAA86D-0EDD-4390-B9BA-B8FE4B0C4802}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84F286C5-7A62-467E-B637-C66C8CA49AF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84F286C5-7A62-467E-B637-C66C8CA49AF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84F286C5-7A62-467E-B637-C66C8CA49AF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84F286C5-7A62-467E-B637-C66C8CA49AF4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{25C329AD-B0FF-4562-8A6C-80B5C2A46422}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25C329AD-B0FF-4562-8A6C-80B5C2A46422}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25C329AD-B0FF-4562-8A6C-80B5C2A46422}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25C329AD-B0FF-4562-8A6C-80B5C2A46422}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF4556AE-1DB1-4339-9C14-BA38BA4C9431}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF4556AE-1DB1-4339-9C14-BA38BA4C9431}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF4556AE-1DB1-4339-9C14-BA38BA4C9431}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF4556AE-1DB1-4339-9C14-BA38BA4C9431}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
