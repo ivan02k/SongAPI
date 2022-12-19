@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace ViewModels.Data.ViewModels
 {
-    internal class ArtistViewModel
+    public class ArtistViewModel
     {
+        public string Name { get; set; }
     }
 }

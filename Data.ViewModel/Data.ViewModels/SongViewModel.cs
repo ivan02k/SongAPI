@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace ViewModels.Data.ViewModels
 {
-    internal class SongViewModel
+    public class SongViewModel
     {
+        public string? Title { get; set; }
+        public string? Genre { get; set; }
+        public int? Year { get; set; }
     }
 }

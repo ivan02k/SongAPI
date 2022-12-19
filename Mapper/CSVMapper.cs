@@ -1,29 +1,30 @@
 ﻿using AutoMapper;
 using Data.Entities;
 using ViewModels;
+using ViewModels.Data.ViewModels;
 
 namespace Mapper
 {
-    //public class CSVMapper: Profile
-    //{
-    //    public CSVMapper()
-    //    {
-    //        CreateMap<CSVViewModel, Artist>()
-    //        .ForMember(dest => dest.Name, act => act.MapFrom(src => src.artist));
+    public class CSVMapper : Profile
+    {
+        public CSVMapper()
+        {
+            CreateMap<ArtistViewModel, Artist>()
+            .ForMember(dest => dest.Name, act => act.MapFrom(src => src.Name));
 
-    //        CreateMap<CSVViewModel, Song>()
-    //        .ForMember(dest => dest.Title, act => act.MapFrom(src => src.title))
-    //        .ForMember(dest => dest.Genre, act => act.MapFrom(src => src.genre))
-    //        .ForMember(dest => dest.Year, act => act.MapFrom(src => src.year));
+            CreateMap<SongViewModel, Song>()
+            .ForMember(dest => dest.Title, act => act.MapFrom(src => src.Title))
+            .ForMember(dest => dest.Genre, act => act.MapFrom(src => src.Genre))
+            .ForMember(dest => dest.Year, act => act.MapFrom(src => src.Year));
 
-    //        CreateMap<CSVViewModel, SongSpecification>()
-    //        .ForMember(dest => dest.Beats, act => act.MapFrom(src => src.beatsPerMinute))
-    //        .ForMember(dest => dest.Energy, act => act.MapFrom(src => src.energy))
-    //        .ForMember(dest => dest.Danceability, act => act.MapFrom(src => src.danceability))
-    //        .ForMember(dest => dest.Valence, act => act.MapFrom(src => src.valence))
-    //        .ForMember(dest => dest.Length, act => act.MapFrom(src => src.length))
-    //        .ForMember(dest => dest.Acousticness, act => act.MapFrom(src => src.acousticness));
-    //    }
+            CreateMap<SongSpecificationViewModel, SongSpecification>()
+            .ForMember(dest => dest.Beats, act => act.MapFrom(src => src.Beats))
+            .ForMember(dest => dest.Energy, act => act.MapFrom(src => src.Energy))
+            .ForMember(dest => dest.Danceability, act => act.MapFrom(src => src.Danceability))
+            .ForMember(dest => dest.Valence, act => act.MapFrom(src => src.Valence))
+            .ForMember(dest => dest.Length, act => act.MapFrom(src => src.Length))
+            .ForMember(dest => dest.Acousticness, act => act.MapFrom(src => src.Acousticness));
+        }
 
-    //}
+    }
 }
