@@ -5,9 +5,9 @@ using ViewModels.Data.ViewModels;
 
 namespace Mapper
 {
-    public class CSVMapper : Profile
+    public class Mapper : Profile
     {
-        public CSVMapper()
+        public Mapper()
         {
             CreateMap<ArtistViewModel, Artist>()
             .ForMember(dest => dest.Name, act => act.MapFrom(src => src.Name));
