@@ -1,4 +1,7 @@
 ﻿using Data.Entities;
+using Data.Entities.IdentityClass;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -8,18 +11,16 @@ using System.Threading.Tasks;
 
 namespace Data
 {
-    public class SongContext:DbContext
+    public class SongContext : IdentityDbContext<ApplicationUser, ApplicationRole, int>
     {
-        //public SongContext()
-        //{
-        //}
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
         public SongContext(DbContextOptions<SongContext> options)
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-            : base(options)
+        : base(options)
         {
-
+        }
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
         }
 
         public DbSet<Artist> Artists { get; set; }
