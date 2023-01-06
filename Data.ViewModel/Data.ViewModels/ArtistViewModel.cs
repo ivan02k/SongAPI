@@ -8,6 +8,6 @@ namespace ViewModels.Data.ViewModels
 {
     public class ArtistViewModel
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
     }
 }

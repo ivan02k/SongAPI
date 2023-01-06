@@ -8,6 +8,7 @@ namespace ViewModels.Data.ViewModels
 {
     public class SongSpecificationViewModel
     {
+        public string? SongName { get; set; }
         public int Beats { get; set; }
         public int Energy { get; set; }
         public int Danceability { get; set; }
