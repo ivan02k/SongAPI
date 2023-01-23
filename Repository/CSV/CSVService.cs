@@ -1,6 +1,7 @@
 ﻿using CsvHelper;
 using Data;
 using Data.Entities;
+using Microsoft.AspNetCore.Mvc;
 using Repository.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -22,6 +23,88 @@ namespace Service.CSV
             _context = context;
         }
 
+        public List<CSVViewModel> DownloadCSV(Stream file)
+        {
+            var reader = new StreamReader(file);
+            var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+            var records = csv.GetRecords<CSVViewModel>().ToList();
+
+            List<CSVViewModel> filterRecords = new List<CSVViewModel>();
+            foreach (var record in records)
+            {
+                bool isSongInData = _context.Songs.ToList().Select(a => a.Title).Contains(record.Title);
+                bool isRecordInFilter = filterRecords.Select(r => r.Title).Contains(record.Title);
+                if (!isRecordInFilter && !isSongInData)
+                {
+                    filterRecords.Add(record);
+                }
+            }
+            return filterRecords;
+        }
+        public IActionResult WriteCSV(List<CSVViewModel> records)
+        {
+
+            var memoryStream = new MemoryStream();
+
+                using (var writer = new StreamWriter(memoryStream, Encoding.UTF8))
+                {
+                    using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+                    {
+                        csv.WriteHeader<CSVViewModel>();
+                        csv.NextRecord();
+                        foreach (CSVViewModel record in records)
+                        {
+                            csv.WriteRecord(record);
+                            csv.NextRecord();
+                        }
+                        writer.Flush();
+                    }
+                
+                }
+            FileStreamResult fsr = new FileStreamResult(new MemoryStream(memoryStream.ToArray()), "application/csv");
+            fsr.FileDownloadName = "Data.csv";
+            return fsr;
+        }
+
+        public List<CSVViewModel> ConvertDataToCSV()
+        {
+            List<CSVViewModel> dataCSV = new List<CSVViewModel>();
+
+            List<Artist> artists = _context.Artists.ToList();
+            foreach (var artist in artists)
+            {
+                List<Song> songs = _context.Songs.Where(s => s.ArtistId == artist.Id).ToList();
+                foreach (Song song in songs)
+                {
+                    SongSpecification? specification = _context.Specifications.Where(s => s.SongId == song.Id).FirstOrDefault();
+                    if (specification ==  null)
+                    {
+                        specification.Beats = 0;
+                        specification.Energy = 0;
+                        specification.Danceability = 0;
+                        specification.Valence = 0;
+                        specification.Length = 0;
+                        specification.Acousticness = 0;
+                    }
+                    CSVViewModel model = new CSVViewModel()
+                    {
+                        Title = song.Title,
+                        Artist = artist.Name,
+                        Genre = song.Genre,
+                        Year = song.Year,
+                        BeatsPerMinute = specification.Beats,
+                        Energy = specification.Energy,
+                        Danceability = specification.Danceability,
+                        Valence = specification.Valence,
+                        Length = specification.Length,
+                        Acousticness = specification.Acousticness,
+                    };
+                    dataCSV.Add(model);
+                }
+            }
+            return dataCSV;
+        }
+
         public List<CSVViewModel> ReadCSV(string path)
         {
                 using (var reader = new StreamReader(path))
@@ -40,7 +123,7 @@ namespace Service.CSV
                 }
 
         }
-        public void CSVDataFilling(List<CSVViewModel> record)
+        public void CSVDataFilling(List<CSVViewModel> record,bool isDownloadCSV)
         {
             Dictionary < string, List<object>> artists = new Dictionary<string, List<object>>();
             
@@ -57,26 +140,32 @@ namespace Service.CSV
                 }
                 
             }
-            int counter = 0;
+            bool haveChange = false;
 
             //Artist
             bool haveArtistInData = (_context.Artists.Count() > 0);
+            if (isDownloadCSV) haveArtistInData = false;
             if (!haveArtistInData)
             {
                 foreach (string artistName in artists.Keys)
                 {
-                  _context.Artists.Add(new Artist() { Name = artistName });
-                  counter++;                    
+                    bool isArtistInData = _context.Artists.ToList().Select(a => a.Name).Contains(artistName);
+                    if(!isArtistInData)
+                    {
+                        _context.Artists.Add(new Artist() { Name = artistName });
+                        haveChange = true;
+                    }                   
                 }
-                if (counter > 0)
+                if (haveChange)
                 {
                     _context.SaveChanges();
-                    counter = 0;
+                    haveChange = false;
                 }
             }
 
             //Song
             bool haveSongInData = (_context.Songs.Count() > 0);
+            if(isDownloadCSV) haveSongInData = false;
             if(!haveSongInData)
             {
                 foreach (string artistName in artists.Keys)
@@ -94,19 +183,20 @@ namespace Service.CSV
                                 Year = model.Year,
                                 ArtistId = artistId
                             });
-                            counter++;
+                            haveChange = true;
                         }
                     }
                 }
-                if (counter > 0)
+                if (haveChange)
                 {
                     _context.SaveChanges();
-                    counter = 0;
+                    haveChange= false;
                 }
             }
 
             //Specification
             bool haveSongSpecificationInData = (_context.Specifications.Count() > 0);
+            if(isDownloadCSV) haveSongSpecificationInData=false;
             if(!haveSongSpecificationInData)
             {
                 foreach (string artistName in artists.Keys)
@@ -127,72 +217,16 @@ namespace Service.CSV
                                 Acousticness = (model.Acousticness != null) ? (int)model.Acousticness : 0,
                                 SongId = songId
                             });
-                            counter++;
+                            haveChange = true;
                         }
                     }
                 }
-                if (counter > 0)
+                if (haveChange)
                 {
                     _context.SaveChanges();
-                    counter = 0;
+                    haveChange = false;
                 }
             }
-
-            //foreach (string artistName in artists.Keys)
-            //{
-            //    int artistId = artistIndex;
-            //    bool isArtistInData = (_context.Artists.Count() > 0)
-            //            ? _context.Artists.ToList().Select(a => a.Name).Contains(artistName)
-            //            : false;
-
-            //    if (!isArtistInData)
-            //    {
-            //        _context.Artists.Add(new Artist() { Name = artistName });
-            //    }
-            //    artistIndex++;
-            //    foreach (var song in artists[artistName])
-            //    {
-            //        int songId = songIndex;
-
-            //        string title = (song.GetType().GetProperties().First(x => x.Name == "Title").GetValue(song)).ToString();
-            //        string genre = (song.GetType().GetProperties().First(x => x.Name == "Genre").GetValue(song)).ToString();
-            //        int year = int.Parse((song.GetType().GetProperties().First(x => x.Name == "Year").GetValue(song)).ToString());
-            //        int beatsPerMinute = int.Parse((song.GetType().GetProperties().First(x => x.Name == "BeatsPerMinute").GetValue(song)).ToString());
-            //        int energy = int.Parse((song.GetType().GetProperties().First(x => x.Name == "Energy").GetValue(song)).ToString());
-            //        int danceability = int.Parse((song.GetType().GetProperties().First(x => x.Name == "Danceability").GetValue(song)).ToString());
-            //        int valence = int.Parse((song.GetType().GetProperties().First(x => x.Name == "Valence").GetValue(song)).ToString());
-            //        int length = int.Parse((song.GetType().GetProperties().First(x => x.Name == "Length").GetValue(song)).ToString());
-            //        int acousticness = int.Parse((song.GetType().GetProperties().First(x => x.Name == "Acousticness").GetValue(song)).ToString());
-
-            //        bool isSongInData = (_context.Songs != null)
-            //        ? _context.Songs.ToList().Select(a => a.Title).Contains(title)
-            //        : false;
-
-            //        if (!isSongInData)
-            //        {
-            //            _context.Songs.Add(new Song()
-            //            {
-            //                Title = title,
-            //                Genre = genre,
-            //                Year = year,
-            //                ArtistId = artistId
-            //            });
-
-            //            _context.Specifications.Add(new SongSpecification()
-            //            {
-            //                Beats = beatsPerMinute,
-            //                Energy = energy,
-            //                Danceability = danceability,
-            //                Valence = valence,
-            //                Length = length,
-            //                Acousticness = acousticness,
-            //                SongId = songId
-            //            });
-            //        }
-            //        songIndex++;
-            //    }
-            //}
-            //_context.SaveChanges();
         }
     }
 

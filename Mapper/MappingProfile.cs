@@ -39,18 +39,34 @@ namespace Mapper
             .ForMember(dest => dest.Length, act => act.MapFrom(src => src.Length))
             .ForMember(dest => dest.Acousticness, act => act.MapFrom(src => src.Acousticness));
 
-            CreateMap<ApplicationUser, RegistrationViewModel>()
+            CreateMap<ApplicationUser, RegisterRequest>()
             .ForMember(dest => dest.FirstName, act => act.MapFrom(src => src.FirstName))
             .ForMember(dest => dest.LastName, act => act.MapFrom(src => src.LastName))
-            .ForMember(dest => dest.Email, act => act.MapFrom(src => src.Email))
-            .ForMember(dest => dest.Email, act => act.MapFrom(src => src.UserName))
-            .ForMember(dest => dest.EmailConfirmed, act => act.MapFrom(src => src.EmailConfirmed));
-            CreateMap<RegistrationViewModel, ApplicationUser>()
+            .ForMember(dest => dest.Username, act => act.MapFrom(src => src.Username));
+            CreateMap<RegisterRequest, ApplicationUser> ()
             .ForMember(dest => dest.FirstName, act => act.MapFrom(src => src.FirstName))
             .ForMember(dest => dest.LastName, act => act.MapFrom(src => src.LastName))
-            .ForMember(dest => dest.Email, act => act.MapFrom(src => src.Email))
-            .ForMember(dest => dest.UserName, act => act.MapFrom(src => src.Email))
-            .ForMember(dest => dest.EmailConfirmed, act => act.MapFrom(src => src.EmailConfirmed));
+            .ForMember(dest => dest.Username, act => act.MapFrom(src => src.Username));
+
+            CreateMap<ApplicationUser, UpdateRequest>()
+            .ForMember(dest => dest.FirstName, act => act.MapFrom(src => src.FirstName))
+            .ForMember(dest => dest.LastName, act => act.MapFrom(src => src.LastName))
+            .ForMember(dest => dest.Username, act => act.MapFrom(src => src.Username));
+            CreateMap<UpdateRequest, ApplicationUser>()
+            .ForMember(dest => dest.FirstName, act => act.MapFrom(src => src.FirstName))
+            .ForMember(dest => dest.LastName, act => act.MapFrom(src => src.LastName))
+            .ForMember(dest => dest.Username, act => act.MapFrom(src => src.Username));
+
+            CreateMap<ApplicationUser, AuthenticateResponse>()
+            .ForMember(dest => dest.FirstName, act => act.MapFrom(src => src.FirstName))
+            .ForMember(dest => dest.LastName, act => act.MapFrom(src => src.LastName))
+            .ForMember(dest => dest.Username, act => act.MapFrom(src => src.Username))
+            .ForMember(dest => dest.Role, act => act.MapFrom(src => src.Role));
+            CreateMap<AuthenticateResponse, ApplicationUser>()
+            .ForMember(dest => dest.FirstName, act => act.MapFrom(src => src.FirstName))
+            .ForMember(dest => dest.LastName, act => act.MapFrom(src => src.LastName))
+            .ForMember(dest => dest.Username, act => act.MapFrom(src => src.Username))
+            .ForMember(dest => dest.Role, act => act.MapFrom(src => src.Role));
         }
 
     }

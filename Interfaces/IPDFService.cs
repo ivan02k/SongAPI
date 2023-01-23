@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ViewModels;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Service.Interfaces
 {
-    public interface IUserService
+    public interface IPDFService
     {
-        public Task LogIn(LogInViewModel obj);
-        public Task Register(RegistrationViewModel obj);
+        public ActionResult GetPDF();
     }
 }

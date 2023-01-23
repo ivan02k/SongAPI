@@ -1,5 +1,4 @@
-﻿
-using Data;
+﻿using Data;
 using Data.Entities;
 using Data.Entities.IdentityClass;
 using AutoMapper;
@@ -12,6 +11,13 @@ using SongAPI.Common;
 using ViewModels.Data.ViewModels;
 using Mapper;
 using Service.Interfaces;
+using Authorization;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,18 +28,67 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<SongContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
+builder.Services.AddSwaggerGen(options =>
 {
-    options.SignIn.RequireConfirmedAccount = true;
-    options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequireUppercase = false;
-    options.Password.RequireLowercase = false;
-})
-.AddRoles<ApplicationRole>()
-.AddEntityFrameworkStores<SongContext>();
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "JWT Authorization header using the Bearer scheme."
+    });
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+             new OpenApiSecurityScheme
+             {
+               Reference = new OpenApiReference
+               {
+                 Id = "Bearer",
+                Type = ReferenceType.SecurityScheme
+               }
+             },
+             new string[] {}
+        }
+    });
+});
 
-builder.Services.AddTransient<IUserService, UserService>();
+//JWT Authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Secret"])),
+        ClockSkew = TimeSpan.Zero
+    };
+});
+
+builder.Services.AddDbContext<SongContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddTransient<DataSeeder>();
+
+//builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
+//{
+//    options.SignIn.RequireConfirmedAccount = true;
+//    options.Password.RequireNonAlphanumeric = false;
+//    options.Password.RequireUppercase = false;
+//    options.Password.RequireLowercase = false;
+//})
+//.AddRoles<ApplicationRole>()
+//.AddEntityFrameworkStores<SongContext>();
+
+
+builder.Services.AddCors();
+builder.Services.AddControllers().AddJsonOptions(x =>
+{
+    // serialize enums as strings in api responses (e.g. Role)
+    x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 
 var config = new MapperConfiguration(cfg =>
 {
@@ -41,6 +96,9 @@ var config = new MapperConfiguration(cfg =>
 });
 var mapper = config.CreateMapper();
 builder.Services.AddSingleton(mapper);
+
+builder.Services.AddScoped<IJwtUtils, JwtUtils>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddTransient<IDataService, DataService>();
 builder.Services.AddTransient<IPDFService, PDFService>();
@@ -62,18 +120,25 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors(x => x
+    .AllowAnyOrigin()
+    .AllowAnyMethod()
+    .AllowAnyHeader());
+
 app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
 app.MapControllers();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-var scope = app.Services.CreateScope();
-var service = scope.ServiceProvider.GetService<ServiceCaller>();
-if(service != null) service.ReadData();
+using var scope = app.Services.CreateScope();
+using (scope)
+{
+    var seeder = scope.ServiceProvider.GetService<DataSeeder>();
+    seeder.Seed();
+    var service = scope.ServiceProvider.GetService<ServiceCaller>();
+    if (service != null) service.ReadData();
+}
 
 app.Run();
 

@@ -1,6 +1,7 @@
 ﻿using Data;
 using Data.Entities;
-using Data.Entities.IdentityClass;
+using Service.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 using Syncfusion.Pdf;
 using Syncfusion.Pdf.Grid;
 using System;
@@ -19,7 +20,7 @@ namespace Service
         {
             _songContext = songContext;
         }
-        public async Task GetPDF()
+        public ActionResult GetPDF()
         {
             //Create a new PDF document.
             PdfDocument doc = new PdfDocument();
@@ -90,16 +91,10 @@ namespace Service
             //Close the document.
             doc.Close(true);
 
-            //Defining the ContentType for pdf file.
-            string contentType = "application/pdf";
-
-            //Define the file name.
-            string fileName = "Output.pdf";
-
             //Creates a FileContentResult object by using the file contents, content type, and file name.
-
-            //File(stream, contentType, fileName);
+            FileStreamResult fsr = new FileStreamResult(stream, "application/pdf");
+            fsr.FileDownloadName = "Sample.pdf";
+            return fsr;
         }
-
     }
 }

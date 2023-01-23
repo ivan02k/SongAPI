@@ -7,16 +7,18 @@ using System.Threading.Tasks;
 
 namespace ViewModels
 {
-    public class RegistrationViewModel
+    public class RegisterRequest
     {
         [Required]
-        public string? FirstName { get; set; }
+        public string FirstName { get; set; }
+
         [Required]
-        public string? LastName { get; set; }
+        public string LastName { get; set; }
+
         [Required]
-        public string? Email { get; set; }
-        public bool EmailConfirmed = true;
+        public string Username { get; set; }
+
         [Required]
-        public string? Password { get; set; }
+        public string Password { get; set; }
     }
 }
