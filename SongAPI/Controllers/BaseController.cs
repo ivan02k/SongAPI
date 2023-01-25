@@ -1,8 +1,10 @@
 ﻿using Data.Entities.IdentityClass;
+using Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Interfaces;
+using ViewModels.Data.ViewModels;
 
 namespace SongAPI.Controllers
 {
@@ -10,9 +12,12 @@ namespace SongAPI.Controllers
     public class BaseController<T> : ControllerBase
     {
         IBaseService<T> _service;
-        public BaseController(IBaseService<T> service)
+        ICached<T> _cached;
+
+        public BaseController(IBaseService<T> service, ICached<T> cached)
         {
             _service = service;
+            _cached = cached;
         }
 
         [HttpPost]
@@ -27,14 +32,14 @@ namespace SongAPI.Controllers
         [AllowAnonymous]
         public List<string> GetAll()
         {
-            return _service.GetAll();
+            return _cached.GetAll();
         }
 
         [HttpGet("byName")]
         [AllowAnonymous]
         public string GetBy(string byName)
         {
-            return _service.GetByName(byName);
+            return _cached.GetByName(byName);
         }
 
         [HttpPut]

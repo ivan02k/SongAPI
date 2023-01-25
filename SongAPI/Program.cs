@@ -18,6 +18,8 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Interfaces;
+using Service.Cached;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -106,6 +108,13 @@ builder.Services.AddTransient<IPDFService, PDFService>();
 builder.Services.AddTransient<IBaseService<ArtistViewModel>, ArtistService>();
 builder.Services.AddTransient<IBaseService<SongViewModel>, SongService>();
 builder.Services.AddTransient<IBaseService<SongSpecificationViewModel>, SongSpecificationService>();
+//Cached
+builder.Services.AddScoped<ICached<ArtistViewModel>, ArtistCached>();
+builder.Services.AddScoped<ICached<SongViewModel>, SongCached>();
+builder.Services.AddScoped<ICached<SongSpecificationViewModel>, SongSpecificationCached>();
+
+// In-Memory Caching
+builder.Services.AddMemoryCache();
 
 builder.Services.AddScoped<ICSVService, CSVService>();
 builder.Services.AddTransient<CSVService>();

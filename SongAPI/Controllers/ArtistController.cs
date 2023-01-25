@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Interfaces;
@@ -10,7 +11,7 @@ namespace SongAPI.Controllers
     [ApiController]
     public class ArtistController : BaseController<ArtistViewModel>
     {
-        public ArtistController(IBaseService<ArtistViewModel> service) : base(service)
+        public ArtistController(IBaseService<ArtistViewModel> service, ICached<ArtistViewModel> cached) : base(service,cached)
         {
         }
     }

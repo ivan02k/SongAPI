@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Interfaces;
+using Microsoft.AspNetCore.Mvc;
 using Repository.Interfaces;
 using ViewModels.Data.ViewModels;
 
@@ -8,7 +9,7 @@ namespace SongAPI.Controllers
     [ApiController]
     public class SongSpecificationController : BaseController<SongSpecificationViewModel>
     {
-        public SongSpecificationController(IBaseService<SongSpecificationViewModel> service) : base(service)
+        public SongSpecificationController(IBaseService<SongSpecificationViewModel> service, ICached<SongSpecificationViewModel> cached) : base(service, cached)
         {
         }
     }
