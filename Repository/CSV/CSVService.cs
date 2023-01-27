@@ -44,7 +44,7 @@ namespace Service.CSV
         public IActionResult WriteCSV(List<CSVViewModel> records)
         {
 
-            var memoryStream = new MemoryStream();
+            MemoryStream memoryStream = new MemoryStream();
 
                 using (var writer = new StreamWriter(memoryStream, Encoding.UTF8))
                 {

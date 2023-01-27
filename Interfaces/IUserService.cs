@@ -10,11 +10,13 @@ namespace Service.Interfaces
 {
     public interface IUserService
     {
-        AuthenticateResponse Authenticate(AuthenticateRequest model);
-        IEnumerable<ApplicationUser> GetAll();
-        ApplicationUser? GetById(int id);
-        void Register(RegisterRequest model);
-        void Update(ApplicationUser user, UpdateRequest model);
-        void Delete(ApplicationUser user);
+        public ApplicationUser? Authenticate(AuthenticateRequest model);
+        public AuthenticateResponse GetToken(ApplicationUser user);
+        public List<string> GetAll();
+        public ApplicationUser? GetByName(string userName);
+        public void Register(RegisterRequest model);
+        public void Update(ApplicationUser user, UpdateRequest model);
+        public void ChangeRole(ApplicationUser user, string role);
+        public void Delete(ApplicationUser user);
     }
 }

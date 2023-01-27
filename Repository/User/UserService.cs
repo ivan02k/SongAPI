@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using ViewModels;
 
@@ -25,15 +26,19 @@ namespace Service
             _mapper = mapper;
         }
 
-        public AuthenticateResponse Authenticate(AuthenticateRequest model)
+        public ApplicationUser? Authenticate(AuthenticateRequest model)
         {
             ApplicationUser? user = _context.Users.SingleOrDefault(x => x.Username == model.Username);
-
             // validate
             if (user == null || !BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash)) return null;
 
+            return user;
+        }
+        public AuthenticateResponse GetToken(ApplicationUser user)
+        {
+            AuthenticateResponse response = new AuthenticateResponse();
             // authentication successful
-            AuthenticateResponse response = _mapper.Map<AuthenticateResponse>(user);
+            response = _mapper.Map<AuthenticateResponse>(user);
             response.Token = _jwtUtils.GenerateJwtToken(user);
             return response;
         }
@@ -44,14 +49,21 @@ namespace Service
             _context.SaveChanges();
         }
 
-        public IEnumerable<ApplicationUser> GetAll()
+        public List<string> GetAll()
         {
-            return _context.Users;
+            List<string> list = new List<string>();
+            List<ApplicationUser> listOfUsers = _context.Users.ToList();
+            foreach (ApplicationUser user in listOfUsers)
+            {
+                string json = JsonSerializer.Serialize(user).ToString();
+                list.Add(json);
+            }
+            return list;
         }
 
-        public ApplicationUser? GetById(int id)
+        public ApplicationUser? GetByName(string userName)
         {
-            var user = _context.Users.Find(id);
+            ApplicationUser? user = _context.Users.Where(u => u.Username == userName).FirstOrDefault();
             return user;
         }
 
@@ -59,7 +71,7 @@ namespace Service
         {
 
             // map model to new user object
-            var user = _mapper.Map<ApplicationUser>(model);
+            ApplicationUser user = _mapper.Map<ApplicationUser>(model);
 
             // hash password
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password);
@@ -72,13 +84,22 @@ namespace Service
 
         public void Update(ApplicationUser user, UpdateRequest model)
         {
-            // hash password if it was entered
-            if (!string.IsNullOrEmpty(model.Password))
-                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password);
+            user.FirstName = (model.FirstName != "string"
+                && model.FirstName != "" && model.FirstName != null) ? model.FirstName : user.FirstName;
+            user.LastName = (model.LastName != "string"
+                && model.LastName != "" && model.LastName != null) ? model.LastName : user.LastName;
+            user.Username = (model.Username != "string"
+                && model.Username != "" && model.Username != null) ? model.Username : user.Username;
+            user.PasswordHash = (!string.IsNullOrEmpty(model.Password)
+                && model.Password != "string"
+                && model.Password != ""
+                && model.Password != null) ? BCrypt.Net.BCrypt.HashPassword(model.Password) : user.PasswordHash;
+            _context.SaveChanges();
+        }
 
-            // copy model to user and save
-            _mapper.Map(model, user);
-            _context.Users.Update(user);
+        public void ChangeRole(ApplicationUser user, string role)
+        {
+            user.Role = role;
             _context.SaveChanges();
         }
     }

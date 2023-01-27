@@ -2,14 +2,14 @@
 using Data.Entities;
 using Service.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Syncfusion.Pdf;
-using Syncfusion.Pdf.Grid;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ViewModels;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
 
 namespace Service
 {
@@ -20,80 +20,131 @@ namespace Service
         {
             _songContext = songContext;
         }
-        public ActionResult GetPDF()
+
+        public ActionResult ArtistStatistics()
         {
-            //Create a new PDF document.
-            PdfDocument doc = new PdfDocument();
-
-            //Add a page.
-            PdfPage page = doc.Pages.Add();
-
-            //Create a PdfGrid.
-            PdfGrid pdfGrid = new PdfGrid();
-
-            //Add values to the list.
-            List<CSVViewModel> data = new List<CSVViewModel>();
+            List<PDFArtist> data = new List<PDFArtist>();
 
             List<Artist> artists = _songContext.Artists.ToList();
-            foreach (var artist in artists)
+            foreach (Artist artist in artists)
             {
-                List<Song> songs = _songContext.Songs.Where(s => s.ArtistId == artist.Id).ToList();
-                foreach(Song song in songs)
+                int numberOfSongs = _songContext.Songs.Where(s => s.ArtistId == artist.Id).ToList().Count();
+                PDFArtist record = new PDFArtist { Artist = artist.Name, NumberOfSong = numberOfSongs };
+                data.Add(record);
+            }
+            data.Sort((a, b) => a.NumberOfSong - b.NumberOfSong);
+            data.Reverse();
+
+            MemoryStream stream = new MemoryStream();
+            Document document = new Document(PageSize.A4, 25, 25, 30, 30);
+            Font NormalFont = FontFactory.GetFont("Arial", 12, Font.NORMAL, BaseColor.BLACK);
+            PdfWriter writer = PdfWriter.GetInstance(document, stream);
+            // Open the document to enable you to write to the document  
+            document.Open();
+            // Add a simple and wellknown phrase to the document in a flow layout manner   
+            Paragraph heading = new Paragraph("List of artists and how many songs they have!");
+            heading.Alignment = Element.ALIGN_CENTER;
+            heading.Font.Size = 30;
+            document.Add(heading);
+            document.Add(new Paragraph(" "));
+            PdfPTable table = new PdfPTable(2);
+            foreach(PDFArtist record in data)
+            {
+                table.AddCell(record.Artist);
+                table.AddCell($"{record.NumberOfSong}");
+            }
+            document.Add(table);
+            // Close the document  
+            document.Close();
+            // Close the writer instance  
+            writer.Close();
+
+            FileStreamResult fsr = new FileStreamResult(new MemoryStream(stream.ToArray()), "application/pdf");
+            fsr.FileDownloadName = "ArtistStatistics.pdf";
+            return fsr;
+        }
+
+        public ActionResult SongStatistics()
+        {
+            List<PDFSong> data = new List<PDFSong>();
+            
+            List<Song> songs = _songContext.Songs.ToList();
+            foreach (Song song in songs)
+            {
+                SongSpecification? songSpecification = _songContext.Specifications.Where(s => s.SongId == song.Id).FirstOrDefault();
+                if (songSpecification != null)
                 {
-                    SongSpecification? specification = _songContext.Specifications.Where(s => s.SongId == song.Id).FirstOrDefault();
-                    if (specification == null)
+                    PDFSong record = new PDFSong() { SongName = song.Title, Genre = song.Genre, Length = songSpecification.Length };
+                    data.Add(record);
+                }
+            }
+            
+            data.Sort((a, b) => a.Length - b.Length);
+            data.Reverse();
+
+            PDFSong[] topFive = data.GetRange(0, 5).ToArray();
+            SortedDictionary<string, List<PDFSong>> dataTable = new SortedDictionary<string, List<PDFSong>>();
+            foreach (PDFSong record in data)
+            {
+                if(record != null)
+                {
+                    string genre = record.Genre??"Other";
+                    if (!dataTable.ContainsKey(genre))
                     {
-                        specification.Beats = 0;
-                        specification.Energy = 0;
-                        specification.Danceability = 0;
-                        specification.Valence = 0;
-                        specification.Length = 0;
-                        specification.Acousticness = 0;
+                        dataTable.Add(genre, new List<PDFSong>());
                     }
-                    CSVViewModel model = new CSVViewModel()
-                    {
-                        Title = song.Title,
-                        Artist = artist.Name,
-                        Genre = song.Genre,
-                        Year = song.Year,
-                        BeatsPerMinute =  specification.Beats,
-                        Energy =  specification.Energy,
-                        Danceability = specification.Danceability,
-                        Valence = specification.Valence,
-                        Length = specification.Length,
-                        Acousticness = specification.Acousticness,
-                    };
-                    data.Add(model);
+                    dataTable[genre].Add(record);
                 }
             }
 
-            //Add list to IEnumerable.
-            IEnumerable<object> dataTable = data;
-
-            //Assign data source.
-            pdfGrid.DataSource = dataTable;
-
-            //Apply built-in table style
-            pdfGrid.ApplyBuiltinStyle(PdfGridBuiltinStyle.GridTable4Accent1);
-
-            //Draw the grid to the page of PDF document.
-            pdfGrid.Draw(page, new Syncfusion.Drawing.PointF(10, 10));
-
-            //Creating the stream object.
             MemoryStream stream = new MemoryStream();
+            Document document = new Document(PageSize.A4, 25, 25, 30, 30);
+            Font NormalFont = FontFactory.GetFont("Arial", 12, Font.NORMAL, BaseColor.BLACK);
+            PdfWriter writer = PdfWriter.GetInstance(document, stream);
+            // Open the document to enable you to write to the document  
+            document.Open();
+            // Add a simple and wellknown phrase to the document in a flow layout manner   
+            Paragraph heading = new Paragraph("Top 5 longest songs");
+            heading.Alignment = Element.ALIGN_CENTER;
+            heading.Font.Size = 30;
+            document.Add(heading);
+            document.Add(new Paragraph(" "));
+            PdfPTable table = new PdfPTable(3);
+            for (int i = 0; i < 5; i++)
+            {
+                table.AddCell(topFive[i].SongName);
+                table.AddCell(topFive[i].Genre);
+                table.AddCell($"{topFive[i].Length}");
+            }
+            document.Add(table);
 
-            //Save the document as a stream.
-            doc.Save(stream);
+            document.Add(new Paragraph(" "));
+            document.Add(new Paragraph(" "));
 
-            //If the position is not set to '0' then the PDF will be empty.
-            stream.Position = 0;
+            foreach (string genre in dataTable.Keys)
+            {
+                PdfPTable table1 = new PdfPTable(2);
+                Paragraph top = new Paragraph (genre);
+                top.Alignment = Element.ALIGN_CENTER;
+                top.Font.Size = 20;
+                document.Add (top);
+                document.Add(new Paragraph(" "));
+                foreach (PDFSong record in dataTable[genre])
+                {
+                    table1.AddCell(record.SongName);
+                    table1.AddCell($"{record.Length}");
+                }
+                document.Add(table1);
+                document.Add(new Paragraph(" "));
+                document.Add(new Paragraph(" "));
+            }
+            // Close the document  
+            document.Close();
+            // Close the writer instance  
+            writer.Close();
 
-            //Close the document.
-            doc.Close(true);
-
-            //Creates a FileContentResult object by using the file contents, content type, and file name.
-            FileStreamResult fsr = new FileStreamResult(stream, "application/pdf");
-            fsr.FileDownloadName = "Sample.pdf";
+            FileStreamResult fsr = new FileStreamResult(new MemoryStream(stream.ToArray()), "application/pdf");
+            fsr.FileDownloadName = "SongStatistics.pdf";
             return fsr;
         }
     }

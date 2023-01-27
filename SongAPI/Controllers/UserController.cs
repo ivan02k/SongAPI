@@ -12,8 +12,7 @@ namespace SongAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme,
-        Roles = "Admin")]
+    [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
     public class UserController : ControllerBase
     {
         private IUserService _userService;
@@ -29,10 +28,11 @@ namespace SongAPI.Controllers
         [HttpPost("authenticate")]
         public IActionResult Authenticate(AuthenticateRequest model)
         {
-            var response = _userService.Authenticate(model);
-            if (response == null)
+            var user = _userService.Authenticate(model);
+            if (user == null)
                 return BadRequest(new { message = "Username or password is incorrect" });
 
+            AuthenticateResponse response = _userService.GetToken(user);
             return Ok(response);
         }
 
@@ -40,33 +40,79 @@ namespace SongAPI.Controllers
         [HttpPost("register")]
         public IActionResult Register(RegisterRequest model)
         {
+            if (model.FirstName == null
+                && model.LastName == null
+                && model.Username == null
+                && model.Password == null)
+            {
+                return Ok(new { message = "Incorrect" });
+            }
             _userService.Register(model);
             return Ok(new { message = "Registration successful" });
         }
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme,
+         Roles = "Admin")]
         [HttpGet]
-        public IActionResult GetAll()
+        public List<string> GetAll()
         {
-            var users = _userService.GetAll();
-            return Ok(users);
+            List<string> users = _userService.GetAll();
+            return users;
         }
 
-        [HttpPut("{id}")]
-        public IActionResult Update(int id, UpdateRequest model)
+        [HttpPut("Edit")]
+        public IActionResult Update(string userName, string password, UpdateRequest changeModel)
         {
-            ApplicationUser? user = _userService.GetById(id);
+            AuthenticateRequest model = new AuthenticateRequest { Username = userName, Password = password };
+            ApplicationUser? user = _userService.Authenticate(model);
             if (user != null)
             {
-                _userService.Update(user, model);
+                _userService.Update(user, changeModel);
                 return Ok(new { message = "User updated successfully" });
             }
             return Ok(new { message = "User not found" });
         }
-
-
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme,
+         Roles = "Admin")]
+        [HttpPut("RaiseToManager")]
+        public IActionResult RaiseToManager(string userName)
         {
-            ApplicationUser? user = _userService.GetById(id);
+            ApplicationUser? user = _userService.GetByName(userName);
+            if (user != null)
+            {
+                if (user.Role != "Admin")
+                {
+                    string role = "Manager";
+                    _userService.ChangeRole(user, role);
+                    return Ok(new { message = "User change role successfully" });
+                }
+                return Ok(new { message = "Can't change admin" });
+            }
+            return Ok(new { message = "User not found" });
+        }
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme,
+         Roles = "Admin")]
+        [HttpPut("FiredManager")]
+        public IActionResult FiredManager(string userName)
+        {
+            ApplicationUser? user = _userService.GetByName(userName);
+            if (user != null)
+            {
+                if (user.Role != "Admin")
+                {
+                    string role = "User";
+                    _userService.ChangeRole(user, role);
+                    return Ok(new { message = "Manager fired successfully" });
+                }
+                return Ok(new { message = "Can't change admin" });
+            }
+            return Ok(new { message = "User not found" });
+        }
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme,
+         Roles = "Admin")]
+        [HttpDelete("byUserName")]
+        public IActionResult Delete(string userName)
+        {
+            ApplicationUser? user = _userService.GetByName(userName);
             if (user != null)
             {
                 if (user.Role != "Admin")

@@ -9,6 +9,7 @@ namespace Service.Interfaces
 {
     public interface IPDFService
     {
-        public ActionResult GetPDF();
+        public ActionResult ArtistStatistics();
+        public ActionResult SongStatistics();
     }
 }

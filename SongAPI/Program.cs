@@ -20,6 +20,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Interfaces;
 using Service.Cached;
+using Authoriz;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -139,12 +140,13 @@ app.MapControllers();
 
 app.UseAuthentication();
 app.UseAuthorization();
+//app.UseMiddleware<AuthorizeAttribute>();
 
 using var scope = app.Services.CreateScope();
 using (scope)
 {
     var seeder = scope.ServiceProvider.GetService<DataSeeder>();
-    seeder.Seed();
+    if (seeder != null) seeder.Seed();
     var service = scope.ServiceProvider.GetService<ServiceCaller>();
     if (service != null) service.ReadData();
 }

@@ -13,10 +13,15 @@ namespace SongAPI.Controllers
         {
             _IPDFService = iPDFService;
         }
-        [HttpGet]
+        [HttpGet("ArtistStatistics")]
+        public IActionResult GetAllArtists()
+        {
+            return _IPDFService.ArtistStatistics();
+        }
+        [HttpGet("SongStatistics")]
         public IActionResult GetAllSongs()
         {
-            return _IPDFService.GetPDF();
+            return _IPDFService.SongStatistics();
         }
     }
 }

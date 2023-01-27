@@ -28,18 +28,18 @@ namespace SongAPI.Controllers
             List<CSVViewModel> list = new List<CSVViewModel>();
             return _iCSVService.WriteCSV(list);
         }
-        [HttpDelete("Delete Data")]
+        [HttpDelete("DeleteData")]
         public bool DeleteAll()
         {
             return _dataService.DeleteAll();
         }
-        [HttpPost]
+        [HttpPost("DownwoadCSV")]
         public IActionResult GetCSV()
         {
             List<CSVViewModel> list = _iCSVService.ConvertDataToCSV();
             return _iCSVService.WriteCSV(list);
         }
-        [HttpPut("Upload CSV")]
+        [HttpPost("UploadCSV")]
         public void UploadCSV([FromForm] IFormFileCollection file) =>
            _iCSVService.CSVDataFilling(_iCSVService.DownloadCSV(file[0].OpenReadStream()), true);
 

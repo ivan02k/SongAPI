@@ -48,15 +48,6 @@ namespace Mapper
             .ForMember(dest => dest.LastName, act => act.MapFrom(src => src.LastName))
             .ForMember(dest => dest.Username, act => act.MapFrom(src => src.Username));
 
-            CreateMap<ApplicationUser, UpdateRequest>()
-            .ForMember(dest => dest.FirstName, act => act.MapFrom(src => src.FirstName))
-            .ForMember(dest => dest.LastName, act => act.MapFrom(src => src.LastName))
-            .ForMember(dest => dest.Username, act => act.MapFrom(src => src.Username));
-            CreateMap<UpdateRequest, ApplicationUser>()
-            .ForMember(dest => dest.FirstName, act => act.MapFrom(src => src.FirstName))
-            .ForMember(dest => dest.LastName, act => act.MapFrom(src => src.LastName))
-            .ForMember(dest => dest.Username, act => act.MapFrom(src => src.Username));
-
             CreateMap<ApplicationUser, AuthenticateResponse>()
             .ForMember(dest => dest.FirstName, act => act.MapFrom(src => src.FirstName))
             .ForMember(dest => dest.LastName, act => act.MapFrom(src => src.LastName))
